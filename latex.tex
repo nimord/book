@@ -1,0 +1,315 @@
+\chapter{\LaTeX~学习}
+
+\section{基础学习}
+
+\subsection{软件准备}
+\label{subsec:latexsoft}
+
+\LaTeX~是一个软件系统，同时也是一套标准。遵照这些标准，实现了（implement）所要求功能的软件集合被称为发行版（distribution）。与此类似的例子有~Java~和~Linux，比如SUN、IBM、BEA~等公司都有自己的~Java~虚拟机（JVM），它们都被称作~Java~的实现；而Linux~有~Red Hat/~Fedora、Ubuntu、SuSE~等众多的发行版。
+
+\begin{table}[htbp]
+\caption{\LaTeX~发行版与编辑器}
+\label{tab:latexsoft}
+\centering
+\begin{tabular}{lll}
+    \toprule
+    操作系统 & 发行版 & 编辑器 \\
+    \midrule
+    Windows & \href{http://www.miktex.org/}{MikTeX} & \href{http://www.toolscenter.org/}{TeXnicCenter}、\href{http://www.winedt.com/}{WinEdt} \\
+    Unix/Linux & \href{http://www.tug.org/texlive/}{TeX Live} & \href{http://www.gnu.org/software/emacs/emacs.html}{Emacs}、\href{http://vim.sourceforge.net/}{vim}、\href{http://kile.sourceforge.net/}{Kile} \\
+    Mac OS & \href{http://www.tug.org/mactex/}{MacTeX} & \href{http://www.uoregon.edu/~koch/texshop/}{TeXShop} \\
+    \bottomrule
+\end{tabular}
+\end{table}
+
+\LaTeX~发行版只提供了一个~\LaTeX~后台处理机制，用户还需要一个前台编辑器来编辑它的源文件。常用的~\LaTeX~发行版和编辑器见\ref{tab:latexsoft}。在使用~\LaTeX~的过程中可能还需要其它一些软件。
+
+\subsection{学习方法}
+\begin{quotation}
+无他，唯手熟尔。
+\begin{flushright}
+---~卖油翁
+\end{flushright}
+\end{quotation}
+
+\begin{quotation}
+用心。
+\begin{flushright}
+---~斯蒂芬·周
+\end{flushright}
+\end{quotation}
+
+比较严谨的入门资料有~Tobias Oetiker~的《A (Not So) Short Introduction to \LaTeXe》（简称lshort）；若想对~\LaTeX~有更深入全面的了解，可以拜读~Mittelbach~的《The \LaTeX~ Companion》。
+
+中文资料可参考李果正的《大家来学~\LaTeX》，lshort~有吴凌云等人翻译的中文版本。
+
+\href{http://www.ctan.org/}{Comprehensive TeX Archive Network}（CTAN）和~\href{http://www.tug.org/}{TeX Users Group}~（TUG）提供了权威、丰富的资源。
+
+\href{http://www.ctex.org}{CTeX}~分别提供了常见问题集（FAQ），一般问题多会在这里找到答案。
+
+中文~\TeX~论坛有\href{http://www.smth.org/bbsdoc.php?board=TeX}{水木清华~BBS TeX~版}、\href{http://bbs.ctex.org/}{CTeX~论坛}。
+
+\subsection{格式及其转换}
+页面描述语言（Page Description Language，PDL）是一种在较高层次上描述实际输出结果的语言。本文只讨论其中三种与~\LaTeX~紧密相关的格式：DVI、PostScript、PDF。
+
+\label{subsec:convert_format}
+DVI、PS、PDF~等格式的的转换关系如\ref{fig:convert_format}所示。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+    \node[box] (tex) {.tex};
+    \node[box] (dvi) [right=5 of tex] {.dvi};
+    \node[box] (pdf) [right=6 of dvi] {.pdf};
+    \node[box] (ps) [above=3 of pdf] {.ps};
+    \path (tex) edge [arrow] node[auto] {latex} (dvi)
+        (dvi) edge [arrow] node[auto] {dvipdfm} (pdf)
+        (dvi.north) [arrow,draw] to node[above,sloped] {dvips} (ps.west)
+        (ps) edge [arrow] node[right] {ps2pdf} (pdf)
+        (tex) edge [arrow,bloop] (pdf);
+    \node [below=.7 of dvi] {pdflatex};
+\end{tikzpicture}
+\caption{格式转换}
+\label{fig:convert_format}
+\end{figure}
+
+最早的~driver~是~\verb|dvips|，它把~DVI~转换为~PS。\verb|dvipdf|~把~DVI~转为~PDF，它后来被~\verb|dvipdfm|~所取代；\verb|dvipdfm|~主要用于处理单字节字符，1999~年之后停止开发；在~\verb|dvipdfm|~基础上发展来的~\verb|dvipdfmx|~可以处理多字节编码。
+
+pdf\TeX~是一种特殊的driver，它跳过~DVI，直接用~\TeX~源文件生成~PDF。基于~pdf\TeX~的~pdf\LaTeX~则把\LaTeX~源文件转为~PDF。
+
+\verb|dvipdfmx|对图形格式的兼容性较好，而且擅长处理中文。
+
+得到~DVI~后，我们可以在控制台用以下命令把它转为~PDF。
+\begin{code}
+dvipdfm xxx(.dvi)
+\end{code}
+
+我们也可以把它转为~PS，接着用~Ghostscript~的一个命令行程序把它转换为~PDF，注意第二个命令需要~\verb|.ps|~后缀。一般情况下不推荐这种方法，因为它多了个步骤。
+\begin{code}
+dvips xxx(.dvi)
+ps2pdf xxx.ps
+\end{code}
+
+pdf\LaTeX~用法如下
+\begin{code}
+pdflatex xxx(.tex)
+\end{code}
+
+\subsection{\LaTeX~语句}
+\LaTeX~源文件的每一行称作一条语句（statement），语句可以分三种：命令（command）、数据（data）和注释（comment）。
+
+命令分为两种：普通命令和环境（environment）。普通命令以\verb|\|~起始，大多只有一行；而环境包含一对起始声明和结尾声明，用于多行的场合。命令和环境可以互相嵌套。
+
+\LaTeX~源文件的结构分三大部分，依次为：文档类声明、序言（可选）、正文。
+这三部分的基本语法如下：
+\begin{code}
+\documentclass[options]{class}  %文档类声明
+\usepackage[options]{package}   %引入宏包
+...
+\begin{document}                %正文
+...
+\end{document}
+\end{code}
+
+把下面例子用编辑器保存为~\verb|hello_world.tex|，这就是一个最简单的~\LaTeX~源文件。
+%\label{subsec:hello_world}
+\begin{code}
+%hello_world.tex
+\documentclass{article}
+\begin{document}
+    Hello, World!
+\end{document}
+\end{code}
+
+\section{\LaTeX~ 中文模版}
+\label{sec:template}
+下面是一个~\LaTeX~ 中文模版\footnote{这是我找到的模版中最好的一个了，尽管没有涉及到系统命令的更改}, 仅供参考！
+
+\begin{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\iffalse                             % 块注释
+如果要注释一块文字，用\iffalse ... \fi 界定住要
+注释的文字。特别提醒：以下设置的次序不能乱，否则
+会引发冲突，影响到编译是否成功。
+\fi
+\documentclass[a4paper,11pt,         % A4纸
+               twoside,              % 双面
+%              openany               % 新章节在偶数页开始
+               ]{article}
+
+%%%%%%%%%% 版面控制 %%%%%%%%%%
+\usepackage{indentfirst}             % 首行缩进
+\iffalse
+\usepackage[%paperwidth=18.4cm, paperheight= 26cm,
+            body={14.6true cm,22true cm},
+            twosideshift=0 pt,
+
+ %headheight=1.0true cm
+            ]{geometry}
+\fi
+\usepackage[perpage,symbol]{footmisc}% 脚注控制
+\usepackage[sf]{titlesec}            % 控制标题
+\usepackage{titletoc}                % 控制目录
+\usepackage{fancyhdr}                % 页眉页脚
+\usepackage{type1cm}                 % 控制字体大小
+\usepackage{indentfirst}             % 首行缩进
+\usepackage{makeidx}                 % 建立索引
+\usepackage{textcomp}                % 千分号等特殊符号
+\usepackage{layouts}                 % 打印当前页面格式
+\usepackage{bbding}                  % 一些特殊符号
+\usepackage{cite}                    % 支持引用
+\usepackage{color,xcolor}            % 支持彩色文本、底色、文本框等
+\usepackage{listings}                % 粘贴源代码
+\lstloadlanguages{}                  % 所要粘贴代码的编程语言
+\lstset{language=,tabsize=4, keepspaces=true,
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em,
+    backgroundcolor=\color{lightgray},    % 定义背景颜色
+    frame=none,                      % 表示不要边框
+    keywordstyle=\color{blue}\bfseries,
+    breakindent=22pt,
+    numbers=left,stepnumber=1,numberstyle=\tiny,
+    basicstyle=\footnotesize,
+    showspaces=false,
+    flexiblecolumns=true,
+    breaklines=true, breakautoindent=true,breakindent=4em,
+    escapeinside={/*@}{@*/}
+}
+
+%%%%%%%%%% 字体支持 %%%%%%%%%%%%
+%\usepackage{ccmap}                  % 使pdfLatex生成的文件支持复制等
+\usepackage{CJK,CJKnumb,CJKulem}     % 中文支持
+\usepackage{times}     % 包括 Times Roman + Helvetica + Courier
+%\usepackage{palatino} % 包括 Palatino + Helvetica + Courier
+%\usepackage{newcent} %包括 New Century Schoolbook + Avant Garde + Courier
+%\usepackage{bookman}  % 包括 Bookman + Avant Garde + Courier
+
+%%%%%%%%%% 数学符号公式 %%%%%%%%%%
+\usepackage{latexsym}
+\usepackage{amsmath}                 % AMS LaTeX宏包
+\usepackage{amssymb}                 % 用来排版漂亮的数学公式
+\usepackage{amsbsy}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{mathrsfs}                % 英文花体字体
+\usepackage{bm}                      % 数学公式中的黑斜体
+\usepackage{relsize}    % 调整公式字体大小：\mathsmaller, \mathlarger
+\usepackage{caption2}                % 浮动图形和表格标题样式
+
+%%%%%%%%%% 图形支持宏包 %%%%%%%%%%
+\ifx\pdfoutput\undefined             % 用latex或pdflatex编译
+  \usepackage[dvips]{graphicx}       % 将eps格式的图片放在figures目录下
+\else                                % 在setup/format.tex中用以下命令注明路径：
+  \usepackage[pdftex]{graphicx}      % \graphicspath{{figures/}}
+\fi
+%\usepackage{subfigure}
+\usepackage{epsfig}                  % 支持eps图像
+%\usepackage{picinpar}               % 图表和文字混排宏包
+%\usepackage[verbose]{wrapfig}       % 图表和文字混排宏包
+%\usepackage{eso-pic}                % 向文档的部分页加n副图形, 可实现水印效果
+%\usepackage{eepic}                  % 扩展的绘图支持
+%\usepackage{curves}                 % 绘制复杂曲线
+%\usepackage{texdraw}                % 增强的绘图工具
+%\usepackage{treedoc}                % 树形图绘制
+%\usepackage{pictex}                 % 可以画任意的图形
+%\usepackage{hyperref}
+
+%%%%%%%%%% 一些距离设置 %%%%%%%%%%%
+\setlength{\floatsep}{10pt plus 3pt minus 2pt}       % 图形之间或图形与正文之间的距离
+\setlength{\abovecaptionskip}{2pt plus 1pt minus 1pt}% 图形中的图与标题之间的距离
+\setlength{\belowcaptionskip}{3pt plus 1pt minus 2pt}% 表格中的表与标题之间的距
+
+%%%%%%%%%% 纸张和页面的大小 %%%%%%%%%%
+%\paperwidth   20 true cm            % 纸张宽
+%\paperheight  30 true cm            % 纸张高
+%\textwidth    10 true cm            % 正文宽
+%\textheight   20 true cm            % 正文高
+%\headheight      14pt               % 页眉高
+%\headsep         16pt               % 页眉距离
+%\footskip        27pt               % 页脚距离
+%\marginparsep    10pt               % 边注区距离
+%\marginparwidth  100pt              % 边注区宽
+\makeindex                           % 生成索引
+\pagestyle{fancy}                    % 页眉页脚风格
+\fancyhf{}                           % 清空当前页眉页脚的默认设置
+
+%%%%%%%%%% 导入中文环境 %%%%%%%%%%
+\AtBeginDocument{\begin{CJK*}{GBK}{song} % 不计中文的空格
+\CJKindent                           % 首行缩进两个汉字
+\sloppy\CJKspace                     % 中英文混排的断行
+\CJKtilde                            % 重新定义~，用~隔开中英文
+\CJKcaption{GB}                      % 章节标题的中文化
+}
+\AtEndDocument{\end{CJK*}}
+
+%%%%%%%%%% 正文 %%%%%%%%%%
+\begin{document}
+
+%%%%%%%%%% 一些新定义 %%%%%%%%%%
+\newcommand{\song}{\CJKfamily{song}} % 宋体
+\newcommand{\hei}{\CJKfamily{hei}}   % 黑体
+\newcommand{\fs}{\CJKfamily{fs}}     % 仿宋
+\newcommand{\kai}{\CJKfamily{kai}}   % 楷体
+
+%%%%%%%%%% 定理类环境的定义 %%%%%%%%%%
+%% 必须在导入中文环境之后
+\newtheorem{example}{例}             % 整体编号
+\newtheorem{algorithm}{算法}
+\newtheorem{theorem}{定理}[section]  % 按 section 编号
+\newtheorem{definition}{定义}
+\newtheorem{axiom}{公理}
+\newtheorem{property}{性质}
+\newtheorem{proposition}{命题}
+\newtheorem{lemma}{引理}
+\newtheorem{corollary}{推论}
+\newtheorem{remark}{注解}
+\newtheorem{condition}{条件}
+\newtheorem{conclusion}{结论}
+\newtheorem{assumption}{假设}
+
+%%%%%%%%%% 一些重定义 %%%%%%%%%%
+%% 必须在导入中文环境之后
+\renewcommand{\contentsname}{目录}     % 将Contents改为目录
+\renewcommand{\abstractname}{摘\ \ 要} % 将Abstract改为摘要
+\renewcommand{\refname}{参考文献}      % 将References改为参考文献
+\renewcommand{\indexname}{索引}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+\renewcommand{\appendixname}{附录}
+\renewcommand{\proofname}{\hei 证明}
+\renewcommand{\algorithm}{\hei 算法}
+
+%%%%%%%%%% 重定义字号命令 %%%%%%%%%%
+\newcommand{\yihao}{\fontsize{26pt}{36pt}\selectfont}       % 一号, 1.4倍行距
+\newcommand{\erhao}{\fontsize{22pt}{28pt}\selectfont}       % 二号, 1.25倍行距
+\newcommand{\xiaoer}{\fontsize{18pt}{18pt}\selectfont}      % 小二, 单倍行距
+\newcommand{\sanhao}{\fontsize{16pt}{24pt}\selectfont}      % 三号, 1.5倍行距
+\newcommand{\xiaosan}{\fontsize{15pt}{22pt}\selectfont}     % 小三, 1.5倍行距
+\newcommand{\sihao}{\fontsize{14pt}{21pt}\selectfont}       % 四号, 1.5倍行距
+\newcommand{\bansi}{\fontsize{13pt}{19.5pt}\selectfont}     % 半四, 1.5倍行距
+\newcommand{\xiaosi}{\fontsize{12pt}{18pt}\selectfont}      % 小四, 1.5倍行距
+\newcommand{\dawu}{\fontsize{11pt}{11pt}\selectfont}        % 大五, 单倍行距
+\newcommand{\wuhao}{\fontsize{10.5pt}{10.5pt}\selectfont}   % 五号, 单倍行距
+
+%%%%%%%%%% 页眉和页脚的设置 %%%%%%%%%%
+\lhead{一个~\LaTeX+CJK~的简单模板}
+\rhead{\TeX~爱好者}
+\lfoot{用~\LaTeX~写科技论文}
+\rfoot{~\thepage~}
+
+%%%%%%%%%% 论文标题、作者等 %%%%%%%%%%
+\title{用~\LaTeX~写科技论文            % 论文标题
+      \thanks{这是一个为初学者写的~\LaTeX+CJK~论文模板，未经作者允许可以
+      随意下载使用并修改传播，目的是让更多的人迅速上手用~\LaTeX~系统写作。}
+       }
+\author{于江生\\                     % 作者
+        北京大学计算机系}
+\date{2008年10月01日}                % 日期
+\maketitle                           % 生成标题
+\tableofcontents                     % 插入目录
+\thispagestyle{empty}                % 首页无页眉页脚
+
+\begin{abstract}
+\noindent % 不缩进
+\end{verbatim}
+
+这是一个简单的~\LaTeX+CJK~的模板，为~\TeX~的初学者提供便利上手的参照。

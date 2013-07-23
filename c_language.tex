@@ -1,0 +1,26 @@
+\chapter{C language}
+
+\section{the difference between \emph{signed} and \emph{unsigned}}
+\begin{code}
+#include <stdio.h>
+#include <string.h>
+
+int main(int argc, char**argv)
+{
+	char a[1000];
+	int i;
+
+	for (i = 0; i < 1000; i++)
+	{
+		a[i] = -1-i;
+	}
+
+	printf("%d\n", strlen(a));
+
+	return 0;
+}
+\end{code}
+输出结果为255
+
+在~X86~下~char~型默认为~signed~数据，而在~arm~下却默认为~unsigned~数据。
+
