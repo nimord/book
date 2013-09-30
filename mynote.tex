@@ -1,10 +1,39 @@
-\documentclass[11pt]{book}
+%set the document type
+\documentclass[a4paper, 11pt]{book}
+%add the packages
+\usepackage{xeCJK}
 
-%\usepackage{lnote}
 
-\usepackage{CJKutf8,CJKnumb}
-%\usepackage{CJKpunct} %a homemade package
+%中文设置
+\newcommand{\song}{SimSun}
+\newcommand{\fang}{FangSong_GB2312}
+\newcommand{\kai}{KaiTi_GB2312}
+\newcommand{\hei}{SimHei}
 
+\setCJKmainfont{\kai}
+
+
+%行距
+\renewcommand{\baselinestretch}{1.25}
+
+%begin my latex document
+\begin{document}
+
+%my note cover
+\title{\Huge \textbf{My Notes}}
+\author{Zhang Chao\footnote{Nobody!}}
+\date{2013年9月30日}
+\maketitle
+
+
+
+
+\end{document}
+
+
+
+
+\iffalse
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 
@@ -249,17 +278,24 @@
     rloop/.style={semithick, to path={-- ++(10pt,0) |- (\tikztotarget)}}
 }
 
-\begin{document}
-\begin{CJK*}{UTF8}{gbsn}
-%\CJKindent %can only be used in the CJK environment
-\CJKtilde
 
-\frontmatter
+
+
+
+
+
+
+\begin{document}
+%\begin{CJK*}{UTF8}{gbsn}
+%\CJKindent %can only be used in the CJK environment
+%\CJKtilde
+
+%\frontmatter
 
 \include{cover} %封面设置
 
 %\setcitestyle{numbers,square}
-
+\iffalse
 %前言页眉
 \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
 
@@ -273,11 +309,12 @@
 
 %\include{latex} %latex notes
 \include{linux}
+
 \include{c_language}
 %\include{git}
 %\include{poem}
  
-\iffalse
+
 \include{basics}
 \include{math}
 %\include{graphics}
@@ -294,6 +331,8 @@
 
 \newpage
 
-\end{CJK*}
+%\end{CJK*}
 
 \end{document}
+
+\fi
