@@ -1,0 +1,132 @@
+\documentclass[a4paper]{ctexart}
+
+% 导言区，加载宏包和各项设置
+\usepackage[hmargin=1.25in,vmargin=1in]{geometry}  %  word 版式
+\usepackage[x11names]{xcolor} %must before tikz, x11names defines RoyalBlue3
+\usepackage[bookmarksnumbered,unicode, pdfborder=1,breaklinks,colorlinks,linkcolor=RoyalBlue3,urlcolor=blue]{hyperref}
+\usepackage{graphicx} % 图片
+\usepackage{fancyhdr} % 页眉页脚
+\usepackage[raggedright]{titlesec} % 标题
+%\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{tikz}
+
+% 环境设置
+\graphicspath{{figures/}} % 设置图片路径
+
+% 页眉页脚格式
+\pagestyle{fancy}
+\fancyhf{}
+\cfoot{\thepage}
+\rhead{USB~启动盘的制作}
+\lhead{\includegraphics[width=3.5cm]{logo/cs2c-logo}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% 行距
+\linespread{1.6}
+
+\lstset{
+basicstyle=\ttfamily,
+columns=flexible,
+numbers=left,
+numberstyle=\footnotesize,
+keywordstyle=\color{blue!70},
+commentstyle=\color{red!50!green!50!blue!50},
+frame=single,backgroundcolor=\color{white}, 
+framexleftmargin=2em,
+breaklines=true,
+escapeinside=``,
+xleftmargin=3.5em,
+xrightmargin=1em, 
+aboveskip=1em
+}
+
+% 正文
+\begin{document}
+
+%%%%　cover %%%%
+\thispagestyle{empty}
+
+\noindent\begin{minipage}{\textwidth}
+	\begin{flushleft}
+	\includegraphics{logo/cs2c-short-logo}
+	\end{flushleft}
+\end{minipage}
+
+\vspace{\stretch{1}}
+\noindent\begin{minipage}{\textwidth}
+\centering
+{\LARGE \bfseries USB~启动盘的制作}
+\noindent\rule[1.5ex]{\textwidth}{1pt}
+\end{minipage}
+
+\vspace{\stretch{2}}
+\noindent\begin{center}
+2016~年~07~月~14~日
+\end{center}
+\clearpage
+
+%%%% main body %%%%
+
+\section{需求说明}
+Linux~各个发行版本是通过~LiveCD ISO~系统镜像方式发布。对于频繁测试系统镜像的工作而言，如果通过刻录光盘方式则需要消耗大量时间及光盘。本文将介绍一种通过~USB（3.0~接口）启动盘的方式实现系统的快速安装。
+
+\section{软硬件要求}
+%\begin{enumerate}[itemsep=0pt,parsep=0pt,label={\chinese*、}]
+%\item \textbf{软件：} Linux~系统，Grub
+%\item \textbf{硬件：}  ~3.0接口的~U~盘\footnote{usb~2.0~接口的也可以，但是其传输速度较低，不建议使用}。
+%\end{enumerate}
+\textbf{软件：}~Linux~系统、Grub；
+
+\textbf{硬件：}~3.0接口的~U~盘\footnote{usb~2.0~接口的也可以，但是其传输速度较低，不建议使用}。
+
+\section{制作步骤}
+下面是以~U~盘（后面约定设备显示~sdb~）并使用第一个分区sdb1作为存储启动文件分区为例的详细制作步骤。
+
+\subsection{U~盘挂载及~grub~安装}
+
+\begin{lstlisting}[language=bash]
+mount /dev/sdb1 /mnt/usb
+grub2-install --force --no-floppy --root-directory=/mnt/usb /dev/sdb  #有些系统可能为 grub-install
+\end{lstlisting}
+
+\emph{注意：/mnt/usb~为挂载点，大部分~U~盘会自动挂载在~/run/media/~下，可根据情况调整。}
+
+命令执行完成后，则会在挂载点根下生成~boot~目录，同时手动在挂载点根下创建iso目录。将对应的镜像文件拷贝到该目录下，镜像名称需要和~grub.cfg~文件中写入的文件名保持一致。
+
+目录结构：
+
+\begin{figure}[htbp]
+\setlength{\leftskip}{3em}
+\begin{tikzpicture}
+\node (boot) at (1,0) {boot};
+\node (grub2) at (2,-0.5) {grub2};
+\node (iso) at (1, -1) {iso};
+\draw (0,0) -- (boot) -- (1, -0.5) -- (grub2);
+\draw (0,0.2) -- (0,-1.2);
+\draw (0, -1) -- (iso);
+\end{tikzpicture}
+\end{figure}
+
+
+\subsection{grub.cfg~文件调整}
+拷贝一个~grub.cfg~文件到~U~盘~boot/grub2~目录下，或则使用\verb|grub2-mkconfig|临时生成一个~grub.cfg~文件，添加或修改~menuentry~如下即可。
+
+\begin{lstlisting}
+menuentry 'TEST' {
+    load_video
+    set gfxpayload=keep
+    insmod gzio
+    insmod part_msdos
+    insmod ext2
+    set root='hd0,msdos1'
+    loopback loop (hd0,1)/iso/test.iso
+    linux16 (loop)/isolinux/vmlinuz0 root=live:CDLABEL=NeoKylin-Linux-Desktop-XX rootfstype=auto ro rd.live.image iso-scan/filename=/iso/test.iso quiet rhgb
+    initrd16 (loop)/isolinux/initrd0.img
+}
+\end{lstlisting}
+
+\emph{注意：root=‘hd0,msdos*’~和~(hd0,*)~需要和使用的分区对应；CDLABEL=*~需要和镜像文件对应；镜像名称~test.iso~可自定义，需要和下一步骤中的~iso~目录下的文件对应。}
+
+
+\end{document}
